@@ -1,0 +1,538 @@
+/* ============================================================
+   UK-Connect — Feuille de style principale
+   Modèle d'interface : site officiel univkara.tg (palette relevée)
+   bleu #223ea4 · or #ffd700 · vert #3db166 · encre #0f172a
+   Typographie : Playfair Display (serif des titres, équivalent libre
+   du « LeBeauneNew » du site) + Jost (texte, police du site)
+   Responsive : mobile-first, menu burger, grilles fluides
+   ============================================================ */
+
+:root {
+  --bleu:        #223ea4;   /* bleu univkara.tg (proche du logo UK) */
+  --bleu-fonce:  #16296e;   /* bandeaux, footer                     */
+  --bleu-clair:  #eff6ff;
+  --vert:        #3db166;   /* vert des boutons du site officiel    */
+  --vert-fonce:  #2c8f4e;
+  --vert-clair:  #e9f8ef;
+  --or:          #ffd700;   /* or vif du site officiel              */
+  --or-fonce:    #8a6d00;
+  --or-clair:    #fff9db;
+  --encre:       #0f172a;
+  --gris:        #334155;
+  --gris-clair:  #64748b;
+  --cadre:       #e2e8f0;
+  --fond:        #f8fafc;
+  --blanc:       #ffffff;
+  --rouge:       #ef4444;
+  --rayon:       16px;
+  --ombre:       0 1px 2px rgba(15, 23, 42, .05), 0 10px 28px -12px rgba(15, 23, 42, .16);
+  --ombre-hover: 0 4px 10px rgba(15, 23, 42, .07), 0 18px 40px -14px rgba(34, 62, 164, .30);
+  --police-titre: "Playfair Display", Georgia, "Times New Roman", serif;
+  --police-texte: "Jost", "Segoe UI", system-ui, Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+::selection { background: var(--or); color: var(--encre); }
+
+body {
+  font-family: var(--police-texte);
+  background: radial-gradient(1100px 480px at 50% -8%, #e7edfa 0%, rgba(231, 237, 250, 0) 62%), var(--fond);
+  color: var(--encre);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .btn, .nav > a, .logo-texte { font-family: var(--police-titre); }
+
+.conteneur { width: min(1140px, 100% - 32px); margin-inline: auto; }
+.principal { flex: 1; padding: 26px 0 48px; }
+
+a { color: var(--bleu); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ------- Barre supérieure (modèle univkara.tg) ------- */
+.topbar { background: var(--bleu); color: #dbe4ff; font-size: 13px; }
+.topbar-interieur {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px 20px; min-height: 46px; padding: 5px 0; flex-wrap: wrap;
+}
+.topbar-droite { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.topbar a { color: inherit; }
+.topbar a:hover { color: var(--or); text-decoration: none; }
+.topbar a.topbar-btn {
+  font-family: var(--police-texte); font-weight: 600; font-size: 13px;
+  background: var(--vert); color: #fff; padding: 7px 20px;
+  border-radius: 999px; letter-spacing: .2px; box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+}
+.topbar a.topbar-btn:hover { background: var(--vert-fonce); color: #fff; }
+.topbar-lien { font-weight: 500; }
+.topbar-lien i { color: var(--or); margin-right: 6px; }
+.topbar-sociaux { display: inline-flex; gap: 7px; }
+.topbar-sociaux a {
+  width: 23px; height: 23px; border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 6px; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 11px; color: #fff;
+}
+.topbar-sociaux a:hover { background: var(--or); border-color: var(--or); color: var(--encre); }
+
+/* ---------------- Barre de navigation ---------------- */
+.barre {
+  background: var(--blanc);
+  border-bottom: 3px solid var(--or);
+  position: sticky; top: 0; z-index: 60;
+  box-shadow: var(--ombre);
+}
+.barre-interieur {
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 9px 0;
+  min-height: 64px;              /* hauteur stable : rien ne « saute » */
+}
+.logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.logo:hover { text-decoration: none; }
+.logo-img { height: 46px; width: auto; display: block; }
+.logo-texte { color: var(--encre); font-size: 18px; font-weight: 400; line-height: 1.15; white-space: nowrap; }
+.logo-texte strong { font-weight: 800; color: var(--bleu); }
+.logo-texte small { display: block; font-size: 10.5px; color: var(--gris-clair); font-weight: 500; }
+
+.nav { display: flex; align-items: center; gap: 17px; flex-wrap: wrap; }
+.nav > a { color: var(--bleu); font-weight: 700; font-size: 14.5px; padding: 6px 2px; white-space: nowrap; }
+.nav > a:hover { color: var(--vert); text-decoration: none; }
+.nav > a.nav-actif { color: var(--vert); box-shadow: inset 0 -2px 0 var(--vert); }
+.nav i { margin-right: 5px; }
+.nav-admin { color: var(--or-fonce) !important; }
+.nav-user { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--bleu); }
+.pastille { width: 9px; height: 9px; border-radius: 50%; background: var(--gris-clair); flex-shrink: 0; }
+.pastille.etudiant   { background: var(--bleu); }
+.pastille.partenaire { background: var(--vert); }
+.pastille.admin      { background: var(--or); }
+
+/* Profil dans la barre : avatar rond + nom cliquable */
+.nav-profil { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--bleu); }
+.nav-profil:hover { color: var(--vert); text-decoration: none; }
+.nav-avatar {
+  width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--or); background: var(--blanc); flex-shrink: 0;
+}
+.nav-avatar-initiales {
+  display: inline-grid; place-items: center;
+  background: linear-gradient(135deg, var(--bleu), var(--vert));
+  color: #fff; font-family: var(--police-titre); font-weight: 800; font-size: 13px;
+}
+/* bouton carré icône (édition profil, déconnexion) */
+.nav-ico {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1.6px solid var(--cadre); color: var(--bleu); background: var(--blanc);
+  font-size: 14.5px;
+}
+.nav-ico:hover { background: var(--bleu-clair); border-color: var(--bleu); }
+@media (max-width: 1400px) {
+  .nav { gap: 11px; }
+  .nav > a { font-size: 13px; }
+  .nav-avatar { width: 32px; height: 32px; }
+  /* la cloche devient icône seule (le badge reste) */
+  .nav-cloche .nav-libelle { display: none; }
+  .topbar-droite { gap: 12px; }
+}
+@media (max-width: 1180px) {
+  .nav > a { font-size: 12.3px; }
+  .nav-ico { width: 34px; height: 34px; }
+  .topbar-aide { display: none; }
+}
+
+.burger {
+  display: none;
+  background: var(--bleu-clair); border: none; color: var(--bleu);
+  font-size: 18px; cursor: pointer;
+  width: 42px; height: 42px; border-radius: 10px;
+  align-items: center; justify-content: center;
+}
+
+/* ---------------- Boutons ---------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 24px; border-radius: 999px;
+  font-weight: 700; font-size: 15px; border: 2px solid transparent;
+  cursor: pointer; transition: .15s; text-align: center; line-height: 1.2;
+}
+.btn:hover { text-decoration: none; transform: translateY(-1px); }
+.btn-bleu    { background: linear-gradient(135deg, var(--bleu), #1a2f86); color: #fff; }
+.btn-bleu:hover { background: var(--bleu-fonce); color: #fff; box-shadow: 0 8px 18px -8px rgba(34, 62, 164, .65); }
+.btn-vert    { background: linear-gradient(135deg, var(--vert), #2c8f4e); color: #fff; }
+.btn-vert:hover { background: var(--vert-fonce); color: #fff; box-shadow: 0 8px 18px -8px rgba(61, 177, 102, .65); }
+.btn-or      { background: var(--or); color: var(--encre); }
+.btn-or:hover   { background: #e6c200; }
+.btn-outline { border-color: var(--bleu); color: var(--bleu); background: transparent; }
+.btn-outline:hover { background: var(--bleu-clair); }
+.btn-rouge   { background: var(--rouge); color: #fff; }
+.btn-petit   { padding: 7px 16px; font-size: 13.5px; }
+.btn-bloc    { display: flex; width: 100%; }
+
+/* ---------------- Hero (accueil) ---------------- */
+.hero {
+  background:
+    radial-gradient(rgba(255, 255, 255, .09) 1.5px, transparent 1.6px),
+    radial-gradient(circle at 90% 12%, rgba(255, 215, 0, .16) 0 130px, transparent 131px),
+    radial-gradient(circle at 96% 82%, rgba(61, 177, 102, .28) 0 110px, transparent 111px),
+    linear-gradient(135deg, #16296e 0%, #223ea4 58%, #0c4da2 125%);
+  background-size: 26px 26px, auto, auto, auto;
+  color: #fff; border-radius: 22px; padding: 66px 44px; margin-bottom: 30px;
+  position: relative; overflow: hidden; text-align: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(15, 23, 42, .38); color: var(--or);
+  font-family: var(--police-texte); font-weight: 600; font-size: 12.5px;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  border-radius: 999px; padding: 8px 22px; margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(27px, 4.4vw, 46px); line-height: 1.15;
+  font-weight: 800; letter-spacing: .2px;
+}
+.hero h1 em { color: var(--or); font-style: normal; }
+.hero p { margin: 16px auto 26px; max-width: 780px; color: #dfe6ff; font-size: 17px; }
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.hero .btn-transparent { border: 2px solid #fff; background: #fff; color: var(--bleu-fonce); }
+.hero .btn-transparent:hover { background: var(--or-clair); border-color: var(--or-clair); color: var(--encre); }
+
+/* ---------------- Statistiques ---------------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: 14px; margin-bottom: 34px;
+}
+.stat {
+  background: var(--blanc); border-radius: var(--rayon); padding: 20px 16px;
+  text-align: center; box-shadow: var(--ombre); border: 1px solid var(--cadre);
+  transition: transform .18s, box-shadow .18s;
+}
+.stat:hover { transform: translateY(-3px); box-shadow: var(--ombre-hover); }
+.stat-icone {
+  width: 42px; height: 42px; margin: 0 auto 9px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 17px;
+  background: var(--bleu-clair); color: var(--bleu);
+}
+.stat b {
+  display: block; font-size: 32px; font-family: var(--police-titre);
+  background: linear-gradient(120deg, var(--bleu), var(--vert));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stat span { color: var(--gris-clair); font-size: 13px; }
+
+/* ---------------- Sections & cartes ---------------- */
+.section { margin-bottom: 38px; }
+.titre-section {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.titre-section h2 { font-size: 23px; font-weight: 700; letter-spacing: .2px; }
+.titre-section h2::before { content: "▎"; color: var(--or); margin-right: 2px; }
+.titre-section h2 i { color: var(--or); font-size: 18px; margin-right: 4px; }
+
+.grille-cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
+  gap: 16px;
+}
+.carte {
+  background: var(--blanc); border-radius: var(--rayon); padding: 20px;
+  box-shadow: var(--ombre); border: 1px solid var(--cadre);
+  display: flex; flex-direction: column; gap: 8px;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+}
+.carte:hover { transform: translateY(-4px); box-shadow: var(--ombre-hover); border-color: #c7d4f5; }
+.carte .etiquettes { display: flex; gap: 6px; flex-wrap: wrap; }
+.carte h3 { font-size: 16px; line-height: 1.35; font-weight: 700; }
+.carte h3 a { color: var(--encre); }
+.carte h3 a:hover { color: var(--bleu); text-decoration: none; }
+.carte p { color: var(--gris); font-size: 13.8px; flex: 1; }
+.carte .auteur, .carte .date { font-size: 12.8px; color: var(--gris-clair); }
+.carte .auteur a { font-weight: 700; }
+
+.etiquette {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px; background: var(--bleu-clair); color: var(--bleu);
+}
+.etiquette-or   { background: var(--or-clair); color: var(--or-fonce); }
+.etiquette-vert { background: var(--vert-clair); color: var(--vert-fonce); }
+.etiquette-rouge{ background: #ffe4e6; color: var(--rouge); }
+.etiquette-gris { background: #f1f3f7; color: var(--gris); }
+
+/* ---------------- Statuts ---------------- */
+.statut { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 700; }
+.statut-en_attente, .statut-en-attente { background: var(--or-clair); color: var(--or-fonce); }
+.statut-valide, .statut-retenue        { background: var(--vert-clair); color: var(--vert-fonce); }
+.statut-rejete, .statut-non_retenue    { background: #ffe4e6; color: var(--rouge); }
+
+/* ---------------- Formulaires ---------------- */
+.panneau {
+  background: var(--blanc); border-radius: var(--rayon);
+  box-shadow: var(--ombre); border: 1px solid var(--cadre);
+  padding: 26px;
+}
+.panneau-etroite { max-width: 470px; margin: 30px auto; }
+.panneau-moyenne { max-width: 760px; margin-inline: auto; }
+.titre-panneau { margin-bottom: 18px; }
+.titre-panneau h1 { font-size: 22px; font-weight: 800; }
+.titre-panneau p { color: var(--gris-clair); font-size: 14px; }
+
+.champ { margin-bottom: 15px; }
+.champ label { display: block; font-weight: 600; font-size: 13.8px; margin-bottom: 5px; }
+.champ input, .champ select, .champ textarea {
+  width: 100%; padding: 12px 14px; border: 1.6px solid #dbe3f0;
+  border-radius: 12px; font-size: 15px; font-family: inherit; background: #fbfcff;
+  color: var(--encre);
+}
+.champ input:focus, .champ select:focus, .champ textarea:focus {
+  outline: none; border-color: var(--bleu); background: #fff;
+  box-shadow: 0 0 0 3.5px rgba(34, 62, 164, .13);
+}
+.champ textarea { min-height: 130px; resize: vertical; }
+.champ .aide { font-size: 12.5px; color: var(--gris-clair); margin-top: 4px; }
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.radios { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.radios label {
+  border: 1.6px solid var(--cadre); border-radius: 10px; padding: 12px;
+  cursor: pointer; font-weight: 600; font-size: 14px; margin: 0;
+}
+.radios input { margin-right: 7px; }
+.radios label:has(input:checked) { border-color: var(--vert); background: var(--vert-clair); }
+
+/* ---------------- Alertes ---------------- */
+.alerte { padding: 13px 17px; border-radius: 12px; margin-bottom: 16px; font-weight: 600; font-size: 14.3px; }
+.alerte-verte { background: var(--vert-clair); color: #065f46; border-left: 4px solid var(--vert); border-top: 1px solid #b5e6cf; border-right: 1px solid #b5e6cf; border-bottom: 1px solid #b5e6cf; }
+.alerte-rouge { background: #ffe9e9; color: #9f1239; border-left: 4px solid var(--rouge); border-top: 1px solid #fecdd3; border-right: 1px solid #fecdd3; border-bottom: 1px solid #fecdd3; }
+
+/* ---------------- Tableaux ---------------- */
+.tableau-englobant {
+  overflow-x: auto; background: var(--blanc);
+  border-radius: var(--rayon); box-shadow: var(--ombre); border: 1px solid var(--cadre);
+  -webkit-overflow-scrolling: touch;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13.8px; min-width: 640px; }
+th {
+  background: linear-gradient(135deg, var(--bleu-fonce), var(--bleu)); color: #fff;
+  text-align: left; padding: 12px 14px; font-size: 11.5px;
+  font-family: var(--police-texte); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .8px; white-space: nowrap;
+}
+td { padding: 11px 14px; border-top: 1px solid var(--cadre); vertical-align: top; }
+tbody tr:nth-child(even) { background: #f8fafc; }
+tbody tr:hover { background: var(--bleu-clair); }
+
+/* ---------------- Profil public étudiant ---------------- */
+.banniere-profil {
+  height: 200px; border-radius: var(--rayon);
+  background-color: var(--bleu);
+  background-size: cover; background-position: center;
+  position: relative;
+}
+.banniere-profil::after {          /* décoration si aucune image */
+  content: "";
+  position: absolute; inset: 0; border-radius: var(--rayon);
+  background:
+    radial-gradient(circle at 85% 30%, rgba(0,155,78,.45) 0 110px, transparent 111px),
+    radial-gradient(circle at 92% 85%, rgba(240,180,41,.35) 0 70px, transparent 71px),
+    linear-gradient(120deg, var(--bleu-fonce), var(--bleu) 55%, var(--vert) 130%);
+}
+.banniere-profil.avec-image::after { display: none; }
+
+.profil-tete { text-align: center; margin-top: -58px; position: relative; z-index: 2; }
+.avatar-rond {
+  width: 116px; height: 116px; border-radius: 50%;
+  border: 4px solid #fff; box-shadow: var(--ombre);
+  object-fit: cover; background: var(--blanc);
+  display: inline-grid; place-items: center;
+  font-family: var(--police-titre); font-weight: 800; font-size: 36px; color: #fff;
+  background-image: linear-gradient(135deg, var(--bleu), var(--vert));
+}
+.profil-tete h1 { font-size: 26px; font-weight: 800; margin-top: 10px; }
+.profil-badges { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ---------------- Divers ---------------- */
+.page-titre { margin-bottom: 20px; }
+.page-titre h1 { font-size: 25px; font-weight: 800; }
+.page-titre h1 i { color: var(--vert); font-size: 21px; margin-right: 6px; }
+.page-titre p { color: var(--gris-clair); }
+
+.etape-num {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--bleu), var(--vert));
+  color: #fff; display: grid; place-items: center;
+  font-size: 17px; margin-bottom: 10px;
+}
+.actions-bas { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.muted { color: var(--gris-clair); font-size: 13.5px; }
+.compteur-notif {
+  background: var(--rouge); color: #fff; font-size: 11.5px; font-weight: 800;
+  border-radius: 20px; padding: 2px 8px; margin-left: 5px;
+}
+
+/* ---------------- Pied de page ---------------- */
+.pied {
+  background: linear-gradient(180deg, var(--bleu-fonce), #101f56);
+  color: #cbd5e1; margin-top: auto; font-size: 14px; border-top: 4px solid var(--or);
+}
+.pied-sociaux { display: flex; gap: 9px; }
+.pied-sociaux a {
+  width: 34px; height: 34px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px;
+}
+.pied-sociaux a:hover { background: var(--or); border-color: var(--or); color: var(--encre); }
+.pied-interieur {
+  display: flex; justify-content: space-between; gap: 24px;
+  padding: 30px 0; flex-wrap: wrap;
+}
+.pied a { color: var(--or); }
+.pied-liens { display: flex; flex-direction: column; gap: 6px; }
+.pied-bas { border-top: 1px solid rgba(255,255,255,.12); text-align: center; padding: 13px; font-size: 12.5px; color: #94a3b8; }
+
+/* ============================================================
+   CV ÉTUDIANT (v2.2) — éditeur « Mon profil » + vue recruteur
+   ============================================================ */
+.carte-identite { padding: 0 0 16px; overflow: hidden; }
+.carte-identite .ci-banniere {
+  height: 96px; background-color: var(--bleu);
+  background-size: cover; background-position: center; position: relative;
+}
+.carte-identite .ci-banniere::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(120deg, var(--bleu-fonce), var(--bleu) 55%, var(--vert) 130%);
+}
+.carte-identite .ci-banniere.avec-image::after { display: none; }
+.carte-identite .ci-corps {
+  display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
+  padding: 0 18px; position: relative; z-index: 2;
+}
+.ci-avatar {
+  width: 84px; height: 84px; border-radius: 50%; object-fit: cover;
+  border: 4px solid #fff; box-shadow: var(--ombre); background: var(--blanc);
+  flex-shrink: 0; margin-top: -42px;   /* seul l'avatar chevauche la bannière */
+}
+.ci-avatar-initiales {
+  display: grid; place-items: center; color: #fff;
+  background-image: linear-gradient(135deg, var(--bleu), var(--vert));
+  font-family: var(--police-titre); font-size: 28px; font-weight: 800;
+}
+.carte-identite .ci-formulaires {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  border-top: 1px dashed var(--cadre); margin: 14px 18px 0; padding-top: 14px;
+}
+.cv-titre-panneau {
+  font-size: 16px; color: var(--bleu); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cv-titre-panneau i { color: var(--or); }
+.grille-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.ligne-cv {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+  border: 1px solid var(--cadre); border-left: 4px solid var(--or);
+  border-radius: 10px; padding: 11px 13px; margin-bottom: 10px; background: #fffdf5;
+}
+.btn-suppr {
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer; flex-shrink: 0;
+  border: 1.5px solid #fecaca; color: var(--rouge); background: #fff; font-size: 13px;
+}
+.btn-suppr:hover { background: #ffe9e9; }
+.liste-competences { display: flex; flex-wrap: wrap; gap: 7px; }
+.puce {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--bleu-clair); color: var(--bleu);
+  border-radius: 999px; padding: 5px 7px 5px 12px;
+  font-size: 13px; font-weight: 600;
+}
+.puce i { color: var(--vert); font-size: 11.5px; }
+.puce-suppr {
+  width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(15, 23, 42, .12); color: var(--encre); font-size: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.puce-suppr:hover { background: var(--rouge); color: #fff; }
+.periode {
+  display: inline-block; background: var(--bleu-clair); color: var(--bleu);
+  font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; margin-left: 6px;
+}
+/* vue recruteur : grille CV */
+.cv-grille { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+.cv-tl { display: flex; flex-direction: column; }
+.cv-tl-item {
+  position: relative; padding: 0 0 15px 22px; border-left: 2px solid var(--cadre);
+}
+.cv-tl-item:last-child { padding-bottom: 2px; border-left-color: transparent; }
+.cv-tl-item::before {
+  content: ""; position: absolute; left: -7px; top: 3px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--or); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--or);
+}
+@media (max-width: 840px) {
+  .cv-grille { grid-template-columns: 1fr; }
+  .carte-identite .ci-formulaires { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   RESPONSIVE — tablette puis mobile
+   ============================================================ */
+@media (max-width: 940px) {
+  .burger { display: inline-flex; }
+  /* dans le menu mobile (panneau), les libellés reviennent */
+  .nav-libelle { display: inline !important; }
+  .nav-cloche .nav-libelle { display: inline !important; }
+
+  /* Le menu s'ouvre en panneau propre sous la barre : plus rien ne « remonte »
+     à côté du logo ni ne repart en désordre en bas. */
+  .nav {
+    display: none;
+    position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+    background: var(--blanc);
+    flex-direction: column; align-items: stretch; gap: 2px;
+    padding: 12px 18px 16px;
+    border-bottom: 3px solid var(--or);
+    box-shadow: 0 14px 24px rgba(17,24,39,.12);
+  }
+  .nav.ouvert { display: flex; }
+  .nav > a { padding: 11px 6px; border-radius: 8px; font-size: 15px; }
+  .nav > a:hover { background: var(--bleu-clair); }
+  /* les boutons carrés (édition profil, déconnexion) deviennent des lignes de menu */
+  .nav .nav-ico {
+    width: 100%; justify-content: flex-start; border: none;
+    border-radius: 8px; font-size: 15px; padding: 11px 6px; color: var(--bleu);
+  }
+  .nav .nav-ico:hover { background: var(--bleu-clair); }
+  .nav .nav-ico::after { content: attr(title); font-weight: 700; margin-left: 11px; }
+  .nav-user {
+    margin-top: 8px; padding-top: 12px;
+    border-top: 1px solid var(--cadre);
+    justify-content: space-between;
+  }
+  .btn { padding: 9px 16px; }
+}
+
+@media (max-width: 640px) {
+  .topbar-interieur { justify-content: center; gap: 6px 12px; font-size: 11.5px; }
+  .topbar-sociaux, .topbar-aide { display: none; }  /* téléphone + boutons seulement */
+  .topbar-btn { padding: 5px 12px; font-size: 12px; }
+  .logo-img { height: 38px; }
+  .logo-texte { font-size: 15.5px; }
+  .logo-texte small { display: none; }            /* sous-titre masqué sur mobile */
+  .principal { padding-top: 18px; }
+  .hero { padding: 34px 22px; border-radius: 16px; }
+  .hero p { font-size: 15px; }
+  .deux-colonnes { grid-template-columns: 1fr; }
+  .radios { grid-template-columns: 1fr; }
+  .panneau { padding: 18px; }
+  .banniere-profil { height: 150px; }
+  .avatar-rond { width: 96px; height: 96px; font-size: 30px; }
+  .profil-tete h1 { font-size: 21px; }
+  .page-titre h1 { font-size: 21px; }
+  .btn { width: auto; }
+  .btn-bloc { width: 100%; }
+}
