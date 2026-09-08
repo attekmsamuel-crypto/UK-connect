@@ -1,69 +1,58 @@
 <?php
-/**
- * UK-Connect — Mes candidatures (étudiant)
- * Suivi des décisions du partenaire avec horodatage (date_decision).
- */
+
 require_once __DIR__ . '/includes/auth.php';
-session_init();
-$u = require_role('etudiant');
-$pdo = db();
 
-$st = $pdo->prepare(
-    'SELECT c.id, c.date_candidature, c.date_decision, sc.code AS statut_code,
-            sc.libelle AS statut_libelle, s.id AS sujet_id, s.titre_sujet,
-            u2.nom_structure AS partenaire, f.sigle AS faculte_sigle
-     FROM candidatures c
-     JOIN statuts_candidature sc ON sc.id = c.statut_id
-     JOIN besoins_sujets s       ON s.id  = c.id_sujet
-     JOIN utilisateurs u2        ON u2.id = s.id_partenaire
-     LEFT JOIN facultes f        ON f.id  = u2.id_faculte
-     WHERE c.id_etudiant = ?
-     ORDER BY c.date_candidature DESC'
-);
-$st->execute([$u['id']]);
-$candidatures = $st->fetchAll();
+demarrer_session();
 
-function classe_statut(string $code): string {
-    return match ($code) {
-        'valide', 'retenue'      => 'statut-valide',
-        'rejete', 'non_retenue'  => 'statut-rejete',
-        default                  => 'statut-en-attente',
-    };
-}
+$moi = exiger_role('etudiant');
+$pdo = connexion_bdd();
+$candidatures = candidatures_de_etudiant($pdo, (int)$moi['id']);
 
-$titre = 'Mes candidatures';
-require __DIR__ . '/includes/header.php';
+$titrePage = 'Mes candidatures';
+require __DIR__ . '/includes/entete.php';
 ?>
 
-<div class="page-titre">
+<div class="titre-page">
   <h1>Mes candidatures</h1>
-  <p>Historique complet de vos candidatures aux sujets déposés par les partenaires.</p>
+  <p>Suivez ici les réponses des partenaires aux sujets sur lesquels vous vous êtes positionné.</p>
 </div>
 
 <?php if (!$candidatures): ?>
-  <div class="panneau">
-    <p>Aucune candidature pour le moment. Parcourez la
-       <a href="<?= url('sujets.php') ?>"><b>banque de sujets d'étude</b></a> pour trouver votre sujet de mémoire <i class="fa-solid fa-lightbulb"></i></p>
+  <div class="vide">
+    Vous n'avez encore candidaté sur aucun besoin.
+    <a href="<?= lien('besoins.php') ?>">Parcourir les besoins publiés</a>.
   </div>
 <?php else: ?>
-<div class="tableau-englobant">
-  <table>
-    <thead>
-      <tr><th>Sujet</th><th>Partenaire</th><th>Déposée le</th><th>Statut</th><th>Décision</th></tr>
-    </thead>
-    <tbody>
-      <?php foreach ($candidatures as $c): ?>
-      <tr>
-        <td><a href="<?= url('sujet-voir.php?id=' . (int)$c['sujet_id']) ?>"><b><?= e($c['titre_sujet']) ?></b></a></td>
-        <td><?= e($c['partenaire']) ?></td>
-        <td><?= date_fr($c['date_candidature']) ?></td>
-        <td><span class="statut <?= classe_statut($c['statut_code']) ?>"><?= e($c['statut_libelle']) ?></span></td>
-        <td><?= $c['date_decision'] ? date_fr($c['date_decision']) : '—' ?></td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
+  <div class="tableau">
+    <table>
+      <thead>
+        <tr>
+          <th>Sujet</th>
+          <th>Partenaire</th>
+          <th>Envoyée le</th>
+          <th>Réponse</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($candidatures as $c): ?>
+          <tr>
+            <td>
+              <a href="<?= lien('besoin.php?id=' . (int)$c['id_besoin']) ?>"><?= e($c['titre']) ?></a>
+              <div class="petit discret"><?= e($c['secteur']) ?></div>
+            </td>
+            <td><?= e($c['nom_structure']) ?></td>
+            <td><?= date_courte($c['date_candidature']) ?></td>
+            <td>
+              <span class="<?= classe_statut($c['statut']) ?>"><?= e(libelle_statut($c['statut'])) ?></span>
+              <?php if ($c['date_decision']): ?>
+                <div class="petit discret">le <?= date_courte($c['date_decision']) ?></div>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
 <?php endif; ?>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/includes/pied.php'; ?>

@@ -1,92 +1,55 @@
 <?php
-/**
- * UK-Connect — Centre de notifications
- * Les notifications sont CRÉÉES AUTOMATIQUEMENT par les triggers de la base
- * (candidature reçue, décision, modération). Cette page les affiche, permet
- * de les marquer comme lues et redirige vers la page concernée.
- */
+
 require_once __DIR__ . '/includes/auth.php';
-session_init();
-$u = require_login();
-$pdo = db();
-csrf_verifier();
 
-// ---------- Marquer comme lue (une, puis redirection vers son lien) ----------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lire_id'])) {
-    $pdo->prepare('UPDATE notifications SET lu = 1 WHERE id = ? AND id_utilisateur = ?')
-        ->execute([(int)$_POST['lire_id'], $u['id']]);
-    $st = $pdo->prepare('SELECT lien FROM notifications WHERE id = ?');
-    $st->execute([(int)$_POST['lire_id']]);
-    $lien = $st->fetchColumn();
-    redirect($lien ? url($lien) : url('notifications.php'));
+demarrer_session();
+
+$moi = exiger_connexion();
+$pdo = connexion_bdd();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifier_csrf();
+    marquer_notifications_lues($pdo, (int)$moi['id']);
+    message('succes', 'Toutes vos notifications sont marquées comme lues.');
+    rediriger(lien('notifications.php'));
 }
 
-// ---------- Tout marquer comme lu ----------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tout_lu'])) {
-    $pdo->prepare('UPDATE notifications SET lu = 1 WHERE id_utilisateur = ?')
-        ->execute([$u['id']]);
-    flash('succes', 'Toutes vos notifications sont marquées comme lues.');
-    redirect(url('notifications.php'));
-}
+$notifications = notifications_de($pdo, (int)$moi['id']);
+$nonLues = compter_notifications_non_lues($pdo, (int)$moi['id']);
 
-// ---------- Liste ----------
-$st = $pdo->prepare(
-    'SELECT * FROM notifications WHERE id_utilisateur = ? ORDER BY lu ASC, date_creation DESC LIMIT 50'
-);
-$st->execute([$u['id']]);
-$notifications = $st->fetchAll();
-$nbNonLues = count(array_filter($notifications, fn($n) => !$n['lu']));
-
-// Icône selon le type de notification (titre généré par les triggers)
-function icone_notif(string $titre): string {
-    if (str_contains($titre, 'retenue'))  return 'fa-circle-check';
-    if (str_contains($titre, 'candidature')) return 'fa-paper-plane';
-    if (str_contains($titre, 'validé'))   return 'fa-circle-check';
-    return 'fa-bell';
-}
-
-$titre = 'Mes notifications';
-require __DIR__ . '/includes/header.php';
+$titrePage = 'Notifications';
+require __DIR__ . '/includes/entete.php';
 ?>
 
-<div class="page-titre" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-  <div>
-    <h1><i class="fa-solid fa-bell"></i> Mes notifications</h1>
-    <p><?= $nbNonLues > 0 ? $nbNonLues . ' non lue(s)' : 'Vous êtes à jour ✓' ?></p>
-  </div>
-  <?php if ($nbNonLues > 0): ?>
-  <form method="post">
-    <?= csrf_field() ?>
-    <button class="btn btn-outline btn-petit" name="tout_lu" value="1">
-      <i class="fa-solid fa-check-double"></i> Tout marquer comme lu</button>
-  </form>
-  <?php endif; ?>
+<div class="titre-page">
+  <h1>Notifications</h1>
+  <p><?= $nonLues > 0 ? $nonLues . ' notification' . ($nonLues > 1 ? 's' : '') . ' non lue' . ($nonLues > 1 ? 's' : '') : 'Tout est à jour.' ?></p>
 </div>
 
-<?php if (!$notifications): ?>
-  <div class="panneau"><p class="muted">Aucune notification pour le moment.
-    Elles apparaîtront ici automatiquement (nouvelle candidature, décision du partenaire, validation de sujet…).</p></div>
-<?php else: ?>
-<div class="grille-cartes">
-  <?php foreach ($notifications as $n): ?>
-    <div class="carte" style="<?= $n['lu'] ? 'opacity:.62;' : 'border-left:4px solid var(--or);' ?>">
-      <div class="etiquettes">
-        <span class="etiquette"><i class="fa-solid <?= icone_notif($n['titre']) ?>"></i>
-          <?= $n['lu'] ? 'Lue' : 'Nouvelle' ?></span>
-        <span class="etiquette etiquette-gris"><?= date_fr($n['date_creation']) ?></span>
-      </div>
-      <h3><?= e($n['titre']) ?></h3>
-      <p><?= e($n['message']) ?></p>
-      <form method="post" class="actions-bas">
-        <?= csrf_field() ?>
-        <input type="hidden" name="lire_id" value="<?= (int)$n['id'] ?>">
-        <button class="btn btn-bleu btn-petit">
-          <?= $n['lien'] ? '<i class="fa-solid fa-arrow-right"></i> Consulter' : '<i class="fa-solid fa-check"></i> Marquer comme lue' ?>
-        </button>
-      </form>
-    </div>
-  <?php endforeach; ?>
-</div>
+<?php if ($nonLues > 0): ?>
+  <form method="post" style="margin-bottom:18px;">
+    <?= champ_csrf() ?>
+    <button type="submit" class="bouton bouton-secondaire bouton-petit">Tout marquer comme lu</button>
+  </form>
 <?php endif; ?>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php if (!$notifications): ?>
+  <div class="vide">Vous n'avez encore reçu aucune notification.</div>
+<?php else: ?>
+  <div class="liste-notifications">
+    <?php foreach ($notifications as $n): ?>
+      <div class="notification<?= (int)$n['lu'] === 0 ? ' non-lue' : '' ?>">
+        <div>
+          <b><?= e($n['titre']) ?></b>
+          <p><?= e($n['message']) ?></p>
+          <?php if ($n['lien']): ?>
+            <p class="petit"><a href="<?= lien($n['lien']) ?>">Ouvrir la page concernée</a></p>
+          <?php endif; ?>
+        </div>
+        <span class="date"><?= date_courte($n['date_creation']) ?></span>
+      </div>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>
+
+<?php require __DIR__ . '/includes/pied.php'; ?>

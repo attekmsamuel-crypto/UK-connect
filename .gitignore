@@ -1,0 +1,4 @@
+assets/uploads/projets/*
+assets/uploads/avatars/*
+assets/uploads/bannieres/*
+!assets/uploads/*/.gitkeep

@@ -1,129 +1,119 @@
 <?php
-/**
- * UK-Connect — Back-office administrateur : tableau de bord & modération
- * Fonctionnalité 4 du cahier des charges : validation ou rejet des sujets,
- * avec traçabilité complète (valide_par + date_validation — base v2).
- */
+
 require_once __DIR__ . '/../includes/auth.php';
-session_init();
-$u = require_role('admin');
-$pdo = db();
-csrf_verifier();
 
-// ---------- Validation / rejet d'un sujet ----------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sujet_id'], $_POST['action'])) {
-    $sujetId = (int)$_POST['sujet_id'];
-    $statut  = $_POST['action'] === 'valider' ? STVAL_VALIDE : STVAL_REJETE;
+demarrer_session();
 
-    // Le trigger trg_besoins_bu vérifie que valide_par est bien un ADMIN
-    // et pose automatiquement date_validation.
-    $pdo->prepare('UPDATE besoins_sujets SET statut_id = ?, valide_par = ? WHERE id = ?')
-        ->execute([$statut, $u['id'], $sujetId]);
-    flash('succes', $_POST['action'] === 'valider'
-        ? 'Sujet validé : il est désormais visible dans la vitrine publique.'
-        : 'Sujet rejeté : il restera invisible des étudiants.');
-    redirect(url('admin/index.php'));
+$moi = exiger_role('admin');
+$pdo = connexion_bdd();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifier_csrf();
+
+    $id = (int)($_POST['besoin_id'] ?? 0);
+    $decision = ($_POST['decision'] ?? '') === 'valide' ? 'valide' : 'rejete';
+    $fiche = besoin($pdo, $id);
+
+    if (!$fiche) {
+        message('erreur', 'Ce besoin est introuvable.');
+    } else {
+        moderer_besoin($pdo, $id, $decision, (int)$moi['id']);
+
+        ajouter_notification(
+            $pdo,
+            (int)$fiche['id_partenaire'],
+            $decision === 'valide' ? 'Besoin publié' : 'Besoin non retenu',
+            $decision === 'valide'
+                ? 'Votre besoin : ' . $fiche['titre'] . ' est désormais visible des étudiants'
+                : 'Votre besoin : ' . $fiche['titre'] . ' n\'a pas été retenu',
+            'espace-partenaire.php'
+        );
+
+        message('succes', $decision === 'valide'
+            ? 'Besoin publié. Il apparaît maintenant dans la liste publique.'
+            : 'Besoin rejeté. Il ne sera pas visible des étudiants.');
+    }
+
+    rediriger(lien('admin/index.php'));
 }
 
-// ---------- Statistiques ----------
-$stats = $pdo->query(
-    'SELECT (SELECT COUNT(*) FROM utilisateurs) AS comptes,
-            (SELECT COUNT(*) FROM utilisateurs WHERE role_id = ' . ROLE_ETUDIANT . ')  AS etudiants,
-            (SELECT COUNT(*) FROM utilisateurs WHERE role_id = ' . ROLE_PARTENAIRE . ') AS partenaires,
-            (SELECT COUNT(*) FROM besoins_sujets WHERE statut_id = ' . STVAL_EN_ATTENTE . ') AS en_attente,
-            (SELECT COUNT(*) FROM besoins_sujets WHERE statut_id = ' . STVAL_VALIDE . ')     AS valides,
-            (SELECT COUNT(*) FROM projets_etudiants) AS projets,
-            (SELECT COUNT(*) FROM candidatures)      AS candidatures'
-)->fetch();
+$chiffres = chiffres_admin($pdo);
+$aModerer = besoins_en_attente($pdo);
+$activite = dernieres_candidatures($pdo, 8);
 
-// ---------- Sujets en attente de modération ----------
-$enAttente = $pdo->query(
-    'SELECT s.*, u.nom_structure
-     FROM besoins_sujets s
-     JOIN utilisateurs u ON u.id = s.id_partenaire
-     WHERE s.statut_id = ' . STVAL_EN_ATTENTE . '
-     ORDER BY s.date_creation ASC'
-)->fetchAll();
-
-// ---------- Dernières candidatures ----------
-$dernieresCand = $pdo->query(
-    'SELECT c.date_candidature, s.titre_sujet, e.id AS etudiant_id, CONCAT(e.prenom, " ", e.nom) AS etudiant
-     FROM candidatures c
-     JOIN besoins_sujets s ON s.id = c.id_sujet
-     JOIN utilisateurs e   ON e.id = c.id_etudiant
-     ORDER BY c.date_candidature DESC LIMIT 6'
-)->fetchAll();
-
-$titre = 'Administration';
-require __DIR__ . '/../includes/header.php';
+$titrePage = 'Modération';
+require __DIR__ . '/../includes/entete.php';
 ?>
 
-<div class="page-titre">
-  <h1>Administration UK-Connect</h1>
-  <p>Modération des sujets et suivi général de la plateforme.</p>
+<div class="titre-page">
+  <h1>Administration</h1>
+  <p>Relecture des besoins déposés par les partenaires et suivi général de la plateforme.</p>
 </div>
 
-<div class="stats">
-  <div class="stat"><b><?= (int)$stats['comptes'] ?></b><span>Comptes</span></div>
-  <div class="stat"><b><?= (int)$stats['etudiants'] ?></b><span>Étudiants</span></div>
-  <div class="stat"><b><?= (int)$stats['partenaires'] ?></b><span>Partenaires</span></div>
-  <div class="stat"><b><?= (int)$stats['en_attente'] ?></b><span>Sujets à modérer</span></div>
-  <div class="stat"><b><?= (int)$stats['valides'] ?></b><span>Sujets validés</span></div>
-  <div class="stat"><b><?= (int)$stats['projets'] ?></b><span>Projets</span></div>
-  <div class="stat"><b><?= (int)$stats['candidatures'] ?></b><span>Candidatures</span></div>
+<div class="chiffres chiffres-clairs">
+  <div class="chiffre"><b><?= (int)$chiffres['a_moderer'] ?></b><span>besoins à relire</span></div>
+  <div class="chiffre"><b><?= (int)$chiffres['publies'] ?></b><span>besoins publiés</span></div>
+  <div class="chiffre"><b><?= (int)$chiffres['projets'] ?></b><span>projets déposés</span></div>
+  <div class="chiffre"><b><?= (int)$chiffres['candidatures'] ?></b><span>candidatures</span></div>
 </div>
 
 <section class="section">
-  <div class="titre-section">
-    <h2><i class="fa-solid fa-gears"></i> Sujets en attente de validation</h2>
-    <a href="<?= url('admin/utilisateurs.php') ?>">Gérer les comptes <i class="fa-solid fa-arrow-right"></i></a>
+  <div class="section-entete">
+    <h2>Besoins en attente de relecture</h2>
+    <a href="<?= lien('admin/utilisateurs.php') ?>">Gérer les comptes</a>
   </div>
 
-  <?php if (!$enAttente): ?>
-    <div class="panneau"><p class="muted">Aucun sujet en attente : la file de modération est vide. <i class="fa-solid fa-face-smile-beam"></i></p></div>
+  <?php if (!$aModerer): ?>
+    <div class="vide">Aucun besoin en attente. La file de modération est vide.</div>
   <?php else: ?>
-    <?php foreach ($enAttente as $s): ?>
-    <div class="panneau" style="margin-bottom:14px;">
-      <div class="etiquettes" style="margin-bottom:6px;">
-        <span class="etiquette"><?= e($s['secteur_filiere']) ?></span>
-        <span class="etiquette etiquette-gris">Déposé par <?= e($s['nom_structure']) ?> · <?= date_fr($s['date_creation']) ?></span>
+    <?php foreach ($aModerer as $b): ?>
+      <div class="panneau ton-<?= e(ton_secteur($b['secteur'])) ?>" style="margin-bottom:16px;">
+        <div class="etiquettes">
+          <span class="etiquette"><?= e($b['secteur']) ?></span>
+          <?php if ($b['sigle']): ?><span class="etiquette etiquette-faculte"><?= e($b['sigle']) ?></span><?php endif; ?>
+          <span class="etiquette etiquette-neutre"><?= icone('immeuble', 14) ?> <?= e($b['nom_structure']) ?></span>
+        </div>
+        <h3><a href="<?= lien('besoin.php?id=' . (int)$b['id']) ?>"><?= e($b['titre']) ?></a></h3>
+        <p class="petit discret">Déposé le <?= date_courte($b['date_depot']) ?></p>
+        <p><?= e(resume_court($b['description'], 420)) ?></p>
+
+        <form method="post" class="ligne-boutons">
+          <?= champ_csrf() ?>
+          <input type="hidden" name="besoin_id" value="<?= (int)$b['id'] ?>">
+          <button type="submit" name="decision" value="valide" class="bouton bouton-vert bouton-petit"
+                  data-confirmer="Publier ce besoin ? Il deviendra visible de tous les étudiants.">Publier</button>
+          <button type="submit" name="decision" value="rejete" class="bouton bouton-rouge bouton-petit"
+                  data-confirmer="Rejeter ce besoin ?">Rejeter</button>
+          <a class="petit" href="<?= lien('besoin.php?id=' . (int)$b['id']) ?>">Lire en entier</a>
+        </form>
       </div>
-      <h3 style="margin-bottom:8px;"><?= e($s['titre_sujet']) ?></h3>
-      <p style="white-space:pre-line; color:var(--gris); font-size:14.5px; margin-bottom:12px;">
-        <?= e(extrait($s['description_probleme'], 400)) ?>
-      </p>
-      <form method="post" class="actions-bas">
-        <?= csrf_field() ?>
-        <input type="hidden" name="sujet_id" value="<?= (int)$s['id'] ?>">
-        <button class="btn btn-vert btn-petit" name="action" value="valider"
-                data-confirm="Valider ce sujet ? Il deviendra visible publiquement."><i class="fa-solid fa-check"></i> Valider</button>
-        <button class="btn btn-rouge btn-petit" name="action" value="rejeter"
-                data-confirm="Rejeter ce sujet ? Il ne sera jamais publié."><i class="fa-solid fa-xmark"></i> Rejeter</button>
-      </form>
-    </div>
     <?php endforeach; ?>
   <?php endif; ?>
 </section>
 
 <section class="section">
-  <div class="titre-section"><h2><i class="fa-solid fa-chart-line"></i> Activité récente</h2></div>
-  <div class="tableau-englobant">
-    <table>
-      <thead><tr><th>Candidature déposée</th><th>Étudiant</th><th>Sujet</th></tr></thead>
-      <tbody>
-        <?php foreach ($dernieresCand as $c): ?>
-        <tr>
-          <td><?= date_fr($c['date_candidature']) ?></td>
-          <td><a href="<?= url('../etudiant.php?id=' . (int)$c['etudiant_id']) ?>"><b><?= e($c['etudiant']) ?></b></a></td>
-          <td><?= e($c['titre_sujet']) ?></td>
-        </tr>
-        <?php endforeach; ?>
-        <?php if (!$dernieresCand): ?>
-        <tr><td colspan="3" class="muted">Aucune candidature enregistrée.</td></tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
+  <div class="section-entete"><h2>Dernières candidatures</h2></div>
+  <?php if (!$activite): ?>
+    <div class="vide">Aucune candidature enregistrée.</div>
+  <?php else: ?>
+    <div class="tableau">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Étudiant</th><th>Sujet</th><th>État</th></tr>
+        </thead>
+        <tbody>
+          <?php foreach ($activite as $c): ?>
+            <tr>
+              <td><?= date_courte($c['date_candidature']) ?></td>
+              <td><a href="<?= lien('etudiant.php?id=' . (int)$c['id_etudiant']) ?>"><?= e($c['prenom'] . ' ' . $c['nom']) ?></a></td>
+              <td><?= e($c['titre']) ?></td>
+              <td><span class="<?= classe_statut($c['statut']) ?>"><?= e(libelle_statut($c['statut'])) ?></span></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  <?php endif; ?>
 </section>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/pied.php'; ?>

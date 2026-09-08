@@ -1,52 +1,80 @@
 <?php
-/**
- * UK-Connect — Connexion
- */
+
 require_once __DIR__ . '/includes/auth.php';
-session_init();
+
+demarrer_session();
 
 if (est_connecte()) {
-    redirect(url('index.php'));
+    rediriger(accueil_du_role(utilisateur_actuel()));
 }
-csrf_verifier(); // après la session, avant tout traitement POST
+
+$pdo = connexion_bdd();
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifier_csrf();
+
     $email = trim($_POST['email'] ?? '');
-    $mdp   = $_POST['mot_de_passe'] ?? '';
-    if ($email !== '' && $mdp !== '' && login($email, $mdp)) {
-        flash('succes', 'Bienvenue, vous êtes connecté.');
-        redirect(url('index.php'));
+    $motDePasse = $_POST['mot_de_passe'] ?? '';
+
+    if (connecter($pdo, $email, $motDePasse)) {
+        $connecte = utilisateur_par_id($pdo, (int)$_SESSION['utilisateur_id']);
+        message('succes', 'Bonjour ' . $connecte['prenom'] . ', vous êtes connecté.');
+        rediriger(accueil_du_role($connecte));
     }
-    // sinon : le message d'erreur flash est déjà positionné par login()
+
+    if (empty($_SESSION['message'])) {
+        message('erreur', 'Adresse email ou mot de passe incorrect.');
+    }
 }
 
-$titre = 'Connexion';
-require __DIR__ . '/includes/header.php';
+$titrePage = 'Connexion';
+require __DIR__ . '/includes/entete.php';
 ?>
 
-<div class="panneau panneau-etroite">
-  <div class="titre-panneau">
-    <h1>Connexion</h1>
-    <p>Accédez à votre espace étudiant, partenaire ou administrateur.</p>
+<div class="formulaire-etroit">
+  <nav class="fil-ariane">
+    <a href="<?= lien('index.php') ?>">Accueil</a><span>/</span>Connexion
+  </nav>
+
+  <div class="encart">
+    <div class="encart-tete">
+      <h1>Identification</h1>
+    </div>
+
+    <div class="encart-corps">
+      <form method="post" novalidate>
+        <?= champ_csrf() ?>
+
+        <div class="champ">
+          <label for="email">Adresse électronique</label>
+          <input type="email" id="email" name="email" value="<?= e($email) ?>" required autofocus>
+        </div>
+
+        <div class="champ">
+          <label for="mot_de_passe">Mot de passe</label>
+          <input type="password" id="mot_de_passe" name="mot_de_passe" required>
+        </div>
+
+        <button type="submit" class="bouton">Se connecter</button>
+      </form>
+
+      <p class="petit discret" style="margin: 20px 0 0;">
+        Les comptes étudiants et partenaires se créent librement :
+        <a href="<?= lien('inscription.php') ?>">créer un compte</a>.
+        Les comptes d'administration sont attribués par l'université.
+      </p>
+    </div>
+
+    <div class="encart-note">
+      <b>Comptes de démonstration</b> — mot de passe <code>UkConnect2026</code>
+      <dl>
+        <dt>Étudiant</dt><dd><code>yao.salami@etu-univkara.tg</code></dd>
+        <dt>Partenaire</dt><dd><code>contact@agrotogo.tg</code></dd>
+        <dt>Administration</dt><dd><code>admin@ukconnect.tg</code></dd>
+      </dl>
+    </div>
   </div>
-
-  <form method="post">
-    <?= csrf_field() ?>
-    <div class="champ">
-      <label for="email">Adresse email</label>
-      <input type="email" id="email" name="email" required autofocus
-             value="<?= e($_POST['email'] ?? '') ?>">
-    </div>
-    <div class="champ">
-      <label for="mot_de_passe">Mot de passe</label>
-      <input type="password" id="mot_de_passe" name="mot_de_passe" required>
-    </div>
-    <button type="submit" class="btn btn-bleu btn-bloc">Se connecter</button>
-  </form>
-
-  <p style="margin-top:16px; text-align:center;" class="muted">
-    Pas encore de compte ? <a href="<?= url('inscription.php') ?>"><b>Créer un compte</b></a>
-  </p>
 </div>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/includes/pied.php'; ?>
